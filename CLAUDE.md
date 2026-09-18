@@ -94,6 +94,18 @@ care se laudă că e ușoară.
 
 ### Jurnal
 
+- **2026-09-19 — v0.1.1.** AppMover portat din GDC Firewall (Regula 40):
+  judecă locația după original, copia din `/Applications` primește carantina
+  fără bitul 0x0080, instalare izolată = reparare pe loc. `DiagnosticLog`
+  (`~/Library/Logs/Farul.log`) + `scripts/logs.sh` (Regula 39); textele
+  alertelor în `L.t(.appMover…)`. Test live (macOS 26.6.2, SIP dezactivat,
+  build notarizat semnat cu modulul `codesigning/` din GDC Vault, zip cu
+  carantină `0083`, Archive Utility, pornit din `~/Downloads`): mutare fără
+  admin, `0043`, original la Coș, repornit neizolat; reparare pe loc
+  (`00c3` → `0043`, fără buclă). Lipsesc încă, găsite la acest test:
+  `scripts/build_app.sh` (menționat în `LocalizationAudit`), modulul
+  `codesigning/` (folder gol), dezinstalatorul (Regula 6), `docs/update.json`
+  — iar sursa aplicației (`macOS/`, `scripts/`) nu e încă în git.
 - **2026-09-15 — v0.1.0.** Proiect nou. Schelet, localizare trilingvă,
   colectoare de metrici, interfață glassmorphic, pictogramă din sursă
   vectorială, scripturi de build.

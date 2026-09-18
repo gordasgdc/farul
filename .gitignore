@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+dist/
+Build/
+*.xcuserdatad
+# Certificatele stau in ~/Developer/Certificates/, niciodata in repo (Regula 1).
+codesigning/*.p12
+codesigning/*.cer
+codesigning/*.p8
