@@ -7,3 +7,6 @@ Build/
 codesigning/*.p12
 codesigning/*.cer
 codesigning/*.p8
+
+# Stare de lucru internă (Regula 50), doar local
+PROJECT_STATE.md
