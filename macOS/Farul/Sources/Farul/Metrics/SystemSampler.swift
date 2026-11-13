@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import AppKit
 
 /// Ceasul comun al aplicației.
 ///
@@ -53,9 +54,45 @@ final class SystemSampler: ObservableObject {
     private var tick = 0
     private let slowEvery = 5
 
+    private let log = DiagnosticLog("sampler")
+    private var sleepObservers: [NSObjectProtocol] = []
+
     private init() {
         start()
+        observeSleepAndWake()
     }
+
+    /// Somn: oprim ceasul (zero treziri în timp ce Mac-ul doarme). Trezire:
+    /// contorii vechi sunt aruncați și primul ciclu doar stabilește o bază,
+    /// altfel un delta peste ore de somn ar arăta un vârf inventat.
+    private func observeSleepAndWake() {
+        let center = NSWorkspace.shared.notificationCenter
+        sleepObservers.append(center.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleSleep() }
+        })
+        sleepObservers.append(center.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleWake() }
+        })
+    }
+
+    func handleSleep() {
+        log.info("Somn: eșantionarea oprită")
+        stop()
+    }
+
+    func handleWake() {
+        log.info("Trezire: baze reinițializate, eșantionarea repornește")
+        cpuMonitor.resetBaseline()
+        networkMonitor.resetBaseline()
+        processMonitor.resetBaseline()
+        start()
+    }
+
+    var isRunning: Bool { timer != nil }
 
     // MARK: - Ciclul
 
@@ -66,6 +103,8 @@ final class SystemSampler: ObservableObject {
         let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.collect() }
         }
+        // 10% toleranță: sistemul poate grupa trezirea cu altele (Regula 21).
+        timer.tolerance = interval * 0.1
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
         collect()

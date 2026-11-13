@@ -36,6 +36,8 @@ final class ProcessMonitor {
     /// secundă e muncă degeaba.
     var limit = 12
 
+    func resetBaseline() { previousCPUTime = [:]; previousTime = nil }
+
     func sample(sortedBy key: SortKey = .cpu) -> Sample {
         let now = Date()
         let pids = Self.allPIDs()

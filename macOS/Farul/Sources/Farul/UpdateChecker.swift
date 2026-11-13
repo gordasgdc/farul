@@ -9,7 +9,17 @@ import Foundation
 final class UpdateChecker {
     static let shared = UpdateChecker()
 
-    private let updateURL = URL(string: "https://gordas.dev/farul/update.json")!
+    private static let publicURL = URL(string: "https://gordas.dev/farul/update.json")!
+    /// Canal local de probă: `defaults write dev.gordas.Farul Farul.updateURL http://127.0.0.1:PORT/update.json`.
+    /// Acceptat NUMAI pentru localhost; semnătura, SHA-256 și versiunea se verifică la fel.
+    private var updateURL: URL {
+        let raw = ProcessInfo.processInfo.environment["FARUL_UPDATE_URL"] ?? UserDefaults.standard.string(forKey: "Farul.updateURL")
+        if let raw, let url = URL(string: raw),
+           url.scheme == "http", ["127.0.0.1", "localhost"].contains(url.host ?? "") {
+            return url
+        }
+        return Self.publicURL
+    }
     private let dismissedKey = "Farul.dismissedUpdateVersion"
 
     /// Manifestul. `version` și `app_version` sunt sinonime: prima e forma
@@ -21,6 +31,7 @@ final class UpdateChecker {
         let appVersion: String?
         let changes: String?
         let downloadURL: [String: String]
+        let sha256: [String: String]
         let mandatory: Bool
 
         enum CodingKeys: String, CodingKey {
@@ -28,6 +39,7 @@ final class UpdateChecker {
             case appVersion = "app_version"
             case changes
             case downloadURL = "download_url"
+            case sha256
             case mandatory
         }
 
@@ -39,6 +51,14 @@ final class UpdateChecker {
             appVersion = try c.decodeIfPresent(String.self, forKey: .appVersion)
             changes = try c.decodeIfPresent(String.self, forKey: .changes)
             mandatory = try c.decodeIfPresent(Bool.self, forKey: .mandatory) ?? false
+
+            if let dict = try? c.decode([String: String].self, forKey: .sha256) {
+                sha256 = dict
+            } else if let single = try? c.decode(String.self, forKey: .sha256) {
+                sha256 = ["mac": single]
+            } else {
+                sha256 = [:]
+            }
 
             // `download_url` a fost și string simplu, și dicționar per
             // platformă. Acceptăm ambele: un manifest scris altfel decât
@@ -65,13 +85,38 @@ final class UpdateChecker {
             switch self {
             case .network(let e): return e.localizedDescription
             case .badStatus(let code): return "HTTP \(code)"
-            case .decode: return "update.json invalid"
+            case .decode: return L.t(.updateManifestInvalid)
+            }
+        }
+    }
+
+    /// Proba fără interfață: aceeași cale ca „Actualizează acum”, fără instalare.
+    /// Întoarce o linie cu verdictul (folosită de `--update-dry-run`).
+    func dryRun() async -> (ok: Bool, message: String) {
+        let result: Result<UpdateInfo, Error> = await withCheckedContinuation { c in fetch { c.resume(returning: $0) } }
+        switch result {
+        case .failure(let error): return (false, "manifest: \(error.localizedDescription)")
+        case .success(let info):
+            let installed = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+            guard isNewer(info.effectiveVersion) else { return (true, "la zi: manifest \(info.effectiveVersion), instalat \(installed)") }
+            guard let string = info.downloadURL["mac"], let url = URL(string: string) else { return (false, "manifest fără download_url.mac") }
+            do {
+                let (pkg, tempDir) = try await SelfUpdater.downloadAndVerify(pkgURL: url, version: info.effectiveVersion,
+                                                                             sha256: info.sha256["mac"], installed: installed)
+                try? FileManager.default.removeItem(at: tempDir)
+                return (true, "ACCEPTAT \(info.effectiveVersion): \(pkg.lastPathComponent) descărcat, integritate, semnatar și versiune verificate (neinstalat)")
+            } catch {
+                return (false, "REFUZAT: \(error.localizedDescription)")
             }
         }
     }
 
     func checkAtLaunch() {
         fetch { [weak self] result in
+            if case .failure(let error) = result {
+                // Eșecul tăcut la pornire se loghează; „n-am putut verifica” ≠ „ești la zi”.
+                DiagnosticLog("updater").warning("Verificare la pornire eșuată: \(error.localizedDescription)")
+            }
             guard let self, case .success(let info) = result else { return }
             guard self.isNewer(info.effectiveVersion) else { return }
             let dismissed = UserDefaults.standard.string(forKey: self.dismissedKey)
@@ -126,7 +171,7 @@ final class UpdateChecker {
         }.resume()
     }
 
-    private func isNewer(_ remote: String) -> Bool {
+    func isNewer(_ remote: String) -> Bool {
         let current = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
         return Self.semVerCompare(remote, current) > 0
     }
@@ -158,7 +203,8 @@ final class UpdateChecker {
 
         if alert.runModal() == .alertFirstButtonReturn,
            let string = info.downloadURL["mac"], let url = URL(string: string) {
-            Task { await SelfUpdater.downloadAndInstall(pkgURL: url, version: info.effectiveVersion) }
+            Task { await SelfUpdater.downloadAndInstall(pkgURL: url, version: info.effectiveVersion,
+                                                         sha256: info.sha256["mac"]) }
         } else {
             UserDefaults.standard.set(info.effectiveVersion, forKey: dismissedKey)
         }
@@ -169,7 +215,7 @@ final class UpdateChecker {
         alert.messageText = title
         alert.informativeText = body
         alert.alertStyle = style
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: L.t(.ok))
         alert.runModal()
     }
 }

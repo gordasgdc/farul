@@ -34,4 +34,4 @@ echo "=== Unified log (${SUBSYSTEM}) — ultimele ${MINUTES} min"
   | grep -v "^Timestamp" | tail -n 30 | sed 's/^/  /'
 
 echo
-echo "Live: scripts/logs.sh --follow · detaliat: defaults write ${SUBSYSTEM} Farul.verboseLog -bool true"
+echo "Live: scripts/logs.sh --follow · detaliat: Setări → Diagnostic → Jurnal detaliat (o oră)"

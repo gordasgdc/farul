@@ -25,6 +25,12 @@ enum AppMover {
     static func promptIfNeeded() {
         let running = Bundle.main.bundleURL
         guard !isRunningFromXcodeOrTests(running) else { return }
+        // Probe izolate (copii de test în afara /Applications) nu trebuie să
+        // atingă aplicația instalată.
+        guard ProcessInfo.processInfo.environment["FARUL_SKIP_APPMOVER"] != "1" else {
+            log.info("Mutarea în /Applications sărită (FARUL_SKIP_APPMOVER)")
+            return
+        }
         let original = originalLocation(of: running)
         let translocated = original.standardizedFileURL != running.standardizedFileURL
 

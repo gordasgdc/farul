@@ -2,12 +2,12 @@
   "$schema": "https://gdc.internal/schemas/plugin-manifest-v1.json",
   "name": "Farul",
   "publisher": "GDC",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Monitor de sistem și rețea pentru macOS: procesor, memorie, trafic, discuri, baterie și procese active, în bara de meniu.",
   "category": "utility",
   "platforms": {
     "macos": {
-      "executable": "Build/macOS/Farul.app",
+      "executable": "Applications/Farul.app",
       "minOSVersion": "13.0",
       "signed": false,
       "notarized": false
@@ -17,7 +17,11 @@
     "svg": "macOS/Farul/Resources/AppIcon.svg",
     "png256": "macOS/Farul/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png"
   },
-  "localization": ["ro", "en", "es"],
+  "localization": [
+    "ro",
+    "en",
+    "es"
+  ],
   "buildStage": "alpha",
   "release": {
     "channel": "alpha",

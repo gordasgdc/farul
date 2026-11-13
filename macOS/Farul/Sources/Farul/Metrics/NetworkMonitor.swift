@@ -36,6 +36,8 @@ final class NetworkMonitor {
     private var previous: [String: (inBytes: UInt64, outBytes: UInt64)] = [:]
     private var previousTime: Date?
 
+    func resetBaseline() { previous = [:]; previousTime = nil }
+
     func sample() -> Sample {
         let now = Date()
         let counters = Self.readCounters()

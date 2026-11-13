@@ -125,8 +125,20 @@ enum K: String, CaseIterable {
     // Mutare în /Applications (AppMover)
     case appMoverTitle, appMoverMessage, appMoverMove, appMoverNotNow, appMoverFailedTitle
     case appMoverFailedMessage, appMoverVersionMismatch, appMoverStillTranslocated, appMoverAccessDenied
+    // Actualizare asistată: stări și refuzuri
+    case updateDownloading, updateVerifying, updateInstalling, updateWindowTitle
+    case updateFailedTitle, updateManualHint, updateOpenPage, updateManifestInvalid
+    case updateErrDownload, updateErrInstall, updateErrVersion, updateErrNoChecksum
+    case updateErrBadURL, updateErrChecksum, updateErrUnsigned, updateErrSigner
+    case updateErrPayload, updateErrApp, updateErrTool
+    // Diagnostic (OBSERVABILITY_STANDARD)
+    case diagnostics, openLogsFolder, copySessionID, exportDiagnostics
+    case exportDone, exportFailed, debugTemporary, sessionID
+    // Dezinstalare
+    case uninstallSection, uninstallApp, uninstallConfirmTitle, uninstallConfirmBody
+    case uninstallConfirmButton, uninstallFailedTitle
     // Diverse
-    case unknown, loading, seconds
+    case ok, cancel, notAvailable, unknown, loading, seconds
 }
 
 enum L {
@@ -265,6 +277,79 @@ enum L {
             .en: "access denied",
             .es: "acceso denegado"],
 
+        .updateDownloading: [.ro: "Se descarcă actualizarea…", .en: "Downloading the update…", .es: "Descargando la actualización…"],
+        .updateVerifying: [.ro: "Se verifică integritatea și semnătura…", .en: "Verifying integrity and signature…", .es: "Verificando integridad y firma…"],
+        .updateInstalling: [.ro: "Se instalează…", .en: "Installing…", .es: "Instalando…"],
+        .updateWindowTitle: [.ro: "Actualizare", .en: "Update", .es: "Actualización"],
+        .updateFailedTitle: [.ro: "Actualizarea a eșuat", .en: "The update failed", .es: "La actualización falló"],
+        .updateManualHint: [
+            .ro: "Aplicația actuală nu a fost modificată. Poți descărca manual ultima versiune.",
+            .en: "The current app was not modified. You can download the latest version manually.",
+            .es: "La aplicación actual no se modificó. Puedes descargar la última versión manualmente."],
+        .updateOpenPage: [.ro: "Deschide pagina", .en: "Open page", .es: "Abrir la página"],
+        .updateManifestInvalid: [.ro: "update.json invalid", .en: "Invalid update.json", .es: "update.json no válido"],
+        .updateErrDownload: [.ro: "Descărcarea a eșuat", .en: "Download failed", .es: "La descarga falló"],
+        .updateErrInstall: [.ro: "Nu am putut porni instalarea", .en: "Could not start the installation", .es: "No se pudo iniciar la instalación"],
+        .updateErrVersion: [
+            .ro: "Versiunea %@ nu este mai nouă decât cea instalată (%@). Actualizarea a fost refuzată.",
+            .en: "Version %@ is not newer than the installed one (%@). The update was refused.",
+            .es: "La versión %@ no es más reciente que la instalada (%@). Se rechazó la actualización."],
+        .updateErrNoChecksum: [
+            .ro: "Manifestul nu conține suma de control a pachetului. Actualizarea a fost refuzată.",
+            .en: "The manifest has no package checksum. The update was refused.",
+            .es: "El manifiesto no incluye la suma de control del paquete. Se rechazó la actualización."],
+        .updateErrBadURL: [
+            .ro: "Adresa de descărcare nu este una de încredere. Actualizarea a fost refuzată.",
+            .en: "The download address is not trusted. The update was refused.",
+            .es: "La dirección de descarga no es de confianza. Se rechazó la actualización."],
+        .updateErrChecksum: [
+            .ro: "Pachetul descărcat nu corespunde sumei de control din manifest. Actualizarea a fost refuzată.",
+            .en: "The downloaded package does not match the manifest checksum. The update was refused.",
+            .es: "El paquete descargado no coincide con la suma de control del manifiesto. Se rechazó la actualización."],
+        .updateErrUnsigned: [
+            .ro: "Pachetul nu este semnat. Actualizarea a fost refuzată.",
+            .en: "The package is not signed. The update was refused.",
+            .es: "El paquete no está firmado. Se rechazó la actualización."],
+        .updateErrSigner: [
+            .ro: "Pachetul este semnat de altcineva decât dezvoltatorul Farul. Actualizarea a fost refuzată.",
+            .en: "The package is signed by someone other than the Farul developer. The update was refused.",
+            .es: "El paquete está firmado por alguien distinto del desarrollador de Farul. Se rechazó la actualización."],
+        .updateErrPayload: [
+            .ro: "Conținutul pachetului nu este Farul în versiunea anunțată. Actualizarea a fost refuzată.",
+            .en: "The package content is not Farul at the announced version. The update was refused.",
+            .es: "El contenido del paquete no es Farul en la versión anunciada. Se rechazó la actualización."],
+        .updateErrApp: [
+            .ro: "Semnătura aplicației din pachet nu este validă. Actualizarea a fost refuzată.",
+            .en: "The signature of the app inside the package is not valid. The update was refused.",
+            .es: "La firma de la aplicación dentro del paquete no es válida. Se rechazó la actualización."],
+        .updateErrTool: [.ro: "Verificare imposibilă", .en: "Verification not possible", .es: "Verificación imposible"],
+
+        .diagnostics: [.ro: "Diagnostic", .en: "Diagnostics", .es: "Diagnóstico"],
+        .openLogsFolder: [.ro: "Deschide folderul de loguri", .en: "Open logs folder", .es: "Abrir la carpeta de registros"],
+        .copySessionID: [.ro: "Copiază ID-ul sesiunii", .en: "Copy session ID", .es: "Copiar el ID de sesión"],
+        .exportDiagnostics: [.ro: "Exportă diagnosticul…", .en: "Export diagnostics…", .es: "Exportar diagnóstico…"],
+        .exportDone: [
+            .ro: "Pachetul de diagnostic a fost creat local: %@. Nu a fost trimis nicăieri.",
+            .en: "The diagnostics package was created locally: %@. It was not sent anywhere.",
+            .es: "El paquete de diagnóstico se creó localmente: %@. No se envió a ningún sitio."],
+        .exportFailed: [.ro: "Exportul a eșuat", .en: "Export failed", .es: "La exportación falló"],
+        .debugTemporary: [
+            .ro: "Jurnal detaliat (o oră)", .en: "Detailed log (one hour)", .es: "Registro detallado (una hora)"],
+        .sessionID: [.ro: "Sesiune", .en: "Session", .es: "Sesión"],
+
+        .uninstallSection: [.ro: "Dezinstalare", .en: "Uninstall", .es: "Desinstalación"],
+        .uninstallApp: [.ro: "Dezinstalează complet aplicația…", .en: "Uninstall the app completely…", .es: "Desinstalar la aplicación por completo…"],
+        .uninstallConfirmTitle: [.ro: "Dezinstalezi Farul?", .en: "Uninstall Farul?", .es: "¿Desinstalar Farul?"],
+        .uninstallConfirmBody: [
+            .ro: "Se șterg setările și datele Farul și aplicația se mută la Coș:\n%@",
+            .en: "Farul's settings and data are deleted and the app is moved to the Trash:\n%@",
+            .es: "Se borran los ajustes y datos de Farul y la aplicación se mueve a la Papelera:\n%@"],
+        .uninstallConfirmButton: [.ro: "Dezinstalează", .en: "Uninstall", .es: "Desinstalar"],
+        .uninstallFailedTitle: [.ro: "Dezinstalarea nu a fost completă", .en: "The uninstall was not complete", .es: "La desinstalación no fue completa"],
+
+        .ok: [.ro: "OK", .en: "OK", .es: "Aceptar"],
+        .cancel: [.ro: "Anulează", .en: "Cancel", .es: "Cancelar"],
+        .notAvailable: [.ro: "Indisponibil", .en: "Not available", .es: "No disponible"],
         .unknown: [.ro: "Necunoscut", .en: "Unknown", .es: "Desconocido"],
         .loading: [.ro: "Se încarcă…", .en: "Loading…", .es: "Cargando…"],
         .seconds: [.ro: "secunde", .en: "seconds", .es: "segundos"],

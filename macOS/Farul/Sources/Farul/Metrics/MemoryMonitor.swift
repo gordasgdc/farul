@@ -90,7 +90,26 @@ final class MemoryMonitor {
     /// încetinească vizibil, nu după. Memoria comprimată e primul semn
     /// real; swap-ul folosit e al doilea şi înseamnă că sistemul a început
     /// deja să scrie pe disc.
+    /// Sursa autoritară e nucleul: `kern.memorystatus_vm_pressure_level`
+    /// (1 normal, 2 avertisment, 4 critic) — aceeași valoare pe care o
+    /// reflectă graficul de presiune din Monitorul de activitate. Pragurile
+    /// de mai jos rămân doar rezervă dacă sysctl-ul nu răspunde. Verificat
+    /// 2026-11-14: cu 2,6 GB swap nucleul raporta 2 (avertisment), iar
+    /// euristica singură spunea „critic”.
+    private static func kernelPressure() -> Pressure? {
+        var level: Int32 = 0
+        var size = MemoryLayout<Int32>.size
+        guard sysctlbyname("kern.memorystatus_vm_pressure_level", &level, &size, nil, 0) == 0 else { return nil }
+        switch level {
+        case 1: return .normal
+        case 2: return .warning
+        case 4: return .critical
+        default: return nil
+        }
+    }
+
     private static func pressure(compressed: UInt64, total: UInt64, swapUsed: UInt64) -> Pressure {
+        if let level = kernelPressure() { return level }
         guard total > 0 else { return .normal }
         let ratio = Double(compressed) / Double(total)
         if ratio > 0.30 || swapUsed > 2_147_483_648 { return .critical }   // >2 GB swap

@@ -5,6 +5,10 @@ import AppKit
 struct FarulApp: App {
     @NSApplicationDelegateAdaptor(FarulAppDelegate.self) private var delegate
 
+    init() {
+        MainActor.assumeIsolated { CommandLineMode.runIfRequested() }
+    }
+
     var body: some Scene {
         // Aplicația trăiește în bara de meniu (`LSUIElement`). Panoul se
         // deschide la cerere — un monitor de sistem care fură o fereastră
@@ -36,9 +40,9 @@ final class FarulAppDelegate: NSObject, NSApplicationDelegate {
         UpdateChecker.shared.checkAtLaunch()
     }
 
-    /// Eșantionarea se oprește când Mac-ul adoarme și repornește la trezire.
-    /// Fără asta, primul eșantion după trezire ar compara contori separați
-    /// de ore de somn și ar arăta un vârf inventat — plus că am trezi
-    /// procesorul degeaba.
-    func applicationDidResignActive(_ notification: Notification) {}
+    /// Somnul/trezirea sunt tratate în `SystemSampler.observeSleepAndWake`.
+    func applicationWillTerminate(_ notification: Notification) {
+        DiagnosticLog("app").info("Oprire")
+        DiagnosticLog.flush()
+    }
 }
