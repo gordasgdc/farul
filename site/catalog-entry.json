@@ -1,0 +1,15 @@
+{
+ "access": {
+  "group": "gdc",
+  "kind": "free",
+  "tags": [
+   "Utilitare"
+  ]
+ },
+ "coverImage": "covers/Farul.png",
+ "downloadURL": "https://github.com/gordasgdc/farul/releases/download/v0.2.0/Farul-0.2.0.pkg",
+ "id": "farul",
+ "name": "Farul",
+ "supportedOS": "macOS",
+ "url": "https://gordas.dev/farul/"
+}
