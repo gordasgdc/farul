@@ -11,17 +11,16 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EXT="/Volumes/CristiGordas/TESTE"
+EXT="${FARUL_WORK:?definește FARUL_WORK (folder de lucru pentru build/teste)}"
 NOTARIZE=0; UNSIGNED=0
 for a in "$@"; do case "$a" in --notarize) NOTARIZE=1;; --unsigned) UNSIGNED=1;; *) echo "argument necunoscut: $a"; exit 2;; esac; done
 
 # Poarta de stocare (Regula 52): fără volum extern real și scriibil, STOP.
-if [ ! -d "$EXT" ] || [ ! -w "$EXT" ] || ! mount | grep -q " on /Volumes/CristiGordas "; then
-  echo "EXTERNAL TEST STORAGE NOT AVAILABLE"; exit 3
+if [ ! -d "$EXT" ] || [ ! -w "$EXT" ]; then
+  echo "FARUL_WORK indisponibil sau nescriibil"; exit 3
 fi
-PROJ="$EXT/GDC_PROJECTS/Farul"; BUILDS="$PROJ/builds"
+PROJ="$EXT"; BUILDS="$PROJ/builds"
 mkdir -p "$BUILDS/clang" "$BUILDS/cache" "$BUILDS/scratch"
-[ -x /Users/gordasgdc/Developer/_gdc-tools/gdc-disk-guard.sh ] && /Users/gordasgdc/Developer/_gdc-tools/gdc-disk-guard.sh 2 || true
 
 PKG_DIR="$ROOT/macOS/Farul"
 PLIST="$PKG_DIR/Resources/Info.plist"

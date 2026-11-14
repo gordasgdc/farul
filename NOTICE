@@ -1,0 +1,5 @@
+Farul — Copyright (c) 2026 Dumitru Cristinel Gordas (GDC). MIT License (see LICENSE).
+
+Third-party code: none. Farul uses only Apple system frameworks (SwiftUI, AppKit,
+Foundation, CryptoKit, IOKit, Darwin) and public macOS APIs. No third-party
+libraries, fonts or images are bundled.

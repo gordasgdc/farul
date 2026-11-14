@@ -6,7 +6,7 @@
 #   scripts/probe-update.sh <candidate-dir>
 set -uo pipefail
 CAND="${1:?candidate dir}"; VERSION=$(basename "$CAND" | sed 's/candidate-//')
-EXT=/Volumes/CristiGordas/TESTE/GDC_PROJECTS/Farul
+EXT="${FARUL_WORK:?definește FARUL_WORK (folder de lucru pentru build/teste)}"
 W="$EXT/builds/probe"; rm -rf "$W"; mkdir -p "$W/logs"
 PKG="$CAND/Farul-$VERSION.pkg"; SHA=$(awk '{print $1}' "$CAND/SHA256SUMS")
 PORT=8777; FAIL=0

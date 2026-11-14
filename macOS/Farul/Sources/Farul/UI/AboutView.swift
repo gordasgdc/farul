@@ -19,7 +19,7 @@ struct AboutView: View {
 
             Divider().padding(.horizontal, 40)
 
-            Text("© 2026 Cristi Gordaș / GDC").font(.caption)
+            Text("© 2026 Dumitru Cristinel Gordas (GDC)").font(.caption)
             Link("gordas.dev/farul", destination: URL(string: "https://gordas.dev/farul")!)
                 .font(.caption)
         }

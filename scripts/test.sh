@@ -1,13 +1,13 @@
 #!/bin/bash
 # Verificări automate Farul: redactare, rotație log, export, verificator de
 # update, dezinstalare pe home izolat, logger defect. Ieșirea merge sub
-# GDC_PROJECTS/Farul (STORAGE_POLICY): nimic generat pe discul intern.
+# Totul generat merge în FARUL_WORK (folder extern de lucru): nimic pe discul intern.
 #   scripts/test.sh [pkg_valid] [versiune] [pkg_nesemnat]
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EXT="/Volumes/CristiGordas/TESTE"
-[ -d "$EXT" ] && [ -w "$EXT" ] || { echo "EXTERNAL TEST STORAGE NOT AVAILABLE"; exit 3; }
-OUT="$EXT/GDC_PROJECTS/Farul/builds/tests"; mkdir -p "$OUT/logs" "$OUT/clang" "$OUT/tmp"
+EXT="${FARUL_WORK:?definește FARUL_WORK (folder de lucru pentru build/teste)}"
+[ -d "$EXT" ] && [ -w "$EXT" ] || { echo "FARUL_WORK indisponibil sau nescriibil"; exit 3; }
+OUT="$EXT/builds/tests"; mkdir -p "$OUT/logs" "$OUT/clang" "$OUT/tmp"
 SRC="$ROOT/macOS/Farul/Sources/Farul"
 export CLANG_MODULE_CACHE_PATH="$OUT/clang" TMPDIR="$OUT/tmp/"
 swiftc -O -o "$OUT/farul-checks" -framework AppKit \

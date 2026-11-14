@@ -4,7 +4,7 @@
 # aplicației instalate, fără automatizare de interfață). Ieșire: evidence/screens/.
 #   scripts/capture-screens.sh [lățime înălțime]
 set -uo pipefail
-EXT=/Volumes/CristiGordas/TESTE/GDC_PROJECTS/Farul
+EXT="${FARUL_WORK:?definește FARUL_WORK (folder de lucru pentru build/teste)}"
 BIN="$EXT/builds/scratch/release/Farul"; S="$EXT/evidence/screens"
 W="${1:-1040}"; H="${2:-640}"
 mkdir -p "$S" "$EXT/builds/probe/logs"

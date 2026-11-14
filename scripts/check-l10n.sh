@@ -6,7 +6,7 @@
 #   scripts/check-l10n.sh [calea/spre/binarul/Farul]
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BIN="${1:-/Volumes/CristiGordas/TESTE/GDC_PROJECTS/Farul/builds/scratch/release/Farul}"
+BIN="${1:-$FARUL_WORK/builds/scratch/release/Farul}"
 SRC="$ROOT/macOS/Farul/Sources/Farul"
 export FARUL_SKIP_APPMOVER=1 FARUL_LOG_DIR="${TMPDIR:-/tmp}/farul-l10n-logs"
 echo "→ audit chei"; "$BIN" --l10n-audit
