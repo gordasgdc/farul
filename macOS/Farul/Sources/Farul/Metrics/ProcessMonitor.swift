@@ -62,7 +62,10 @@ final class ProcessMonitor {
             // umple jurnalul cu zeci de linii pe secundă, fără folos.
             guard result == 0 else { continue }
 
-            let cpuTime = usage.ri_user_time + usage.ri_system_time   // nanosecunde
+            // `ri_*_time` sunt în unități mach_absolute_time, NU în nanosecunde:
+            // pe Apple Silicon o unitate = 125/3 ns. Fără conversie, procentele
+            // ieșeau de ~42 de ori prea mici (Finder 82% în `top`, 2% aici).
+            let cpuTime = Self.nanoseconds(usage.ri_user_time + usage.ri_system_time)
             currentCPUTime[pid] = cpuTime
 
             var cpu = 0.0
@@ -86,6 +89,19 @@ final class ProcessMonitor {
         }
 
         return Sample(entries: Array(entries.prefix(limit)), count: entries.count)
+    }
+
+    private static let timebase: mach_timebase_info_data_t = {
+        var info = mach_timebase_info_data_t()
+        mach_timebase_info(&info)
+        return info
+    }()
+
+    private static func nanoseconds(_ ticks: UInt64) -> UInt64 {
+        let t = timebase
+        guard t.denom != 0 else { return ticks }
+        // Împărțire întâi pe cât posibil: ticks poate fi mare (zile de CPU).
+        return ticks / UInt64(t.denom) * UInt64(t.numer) + ticks % UInt64(t.denom) * UInt64(t.numer) / UInt64(t.denom)
     }
 
     // MARK: - Citirea brută

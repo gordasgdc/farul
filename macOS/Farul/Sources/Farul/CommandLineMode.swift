@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import SwiftUI
 
 /// Moduri fără interfață, pentru verificare și suport:
 ///   Farul --dump-metrics      două eșantionări la 1 s, JSON pe stdout
@@ -36,6 +37,45 @@ enum CommandLineMode {
             for key in K.allCases { print("\(key.rawValue)\t\(L.t(key, lang))") }
             exit(0)
         }
+    }
+
+    /// `Farul --snapshot <png> <ro|en|es> <dark|light|system> [lățime înălțime]`:
+    /// deschide panoul real într-o fereastră, lasă graficele să se umple și
+    /// îl fotografiază prin `screencapture -l` (materiale reale, fără
+    /// automatizare de interfață). Apelat din `applicationDidFinishLaunching`;
+    /// rulat din binarul SwiftPM, fără bundle, ca să nu atingă setările
+    /// aplicației instalate.
+    @MainActor
+    static func snapshotIfRequested() -> Bool {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--snapshot"), i + 3 < args.count else { return false }
+        let path = args[i + 1]
+        let lang = Lang(rawValue: args[i + 2]) ?? .ro
+        let theme = AppTheme(rawValue: args[i + 3]) ?? .dark
+        let width = i + 4 < args.count ? Double(args[i + 4]) ?? 780 : 780
+        let height = i + 5 < args.count ? Double(args[i + 5]) ?? 860 : 860
+        NSApp.setActivationPolicy(.accessory)
+        LocalizationManager.shared.set(.fixed(lang))
+        ThemeManager.shared.set(theme)
+        let window = NSWindow(contentRect: NSRect(x: 80, y: 80, width: width, height: height),
+                              styleMask: [.titled, .closable, .fullSizeContentView],
+                              backing: .buffered, defer: false)
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.contentView = NSHostingView(rootView: DashboardView().frame(width: width, height: height))
+        window.setContentSize(NSSize(width: width, height: height))
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 14) {   // ~7 eșantioane la 2 s
+            let capture = Process()
+            capture.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+            capture.arguments = ["-x", "-o", "-l", String(window.windowNumber), path]
+            try? capture.run(); capture.waitUntilExit()
+            print("snapshot \(path) status=\(capture.terminationStatus)")
+            exit(0)
+        }
+        return true
     }
 
     private static func dumpMetrics() {

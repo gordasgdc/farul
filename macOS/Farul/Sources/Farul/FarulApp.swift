@@ -33,6 +33,7 @@ struct FarulApp: App {
 
 final class FarulAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if CommandLineMode.snapshotIfRequested() { return }
         AppMover.promptIfNeeded()
         _ = ThemeManager.shared
         _ = LocalizationManager.shared

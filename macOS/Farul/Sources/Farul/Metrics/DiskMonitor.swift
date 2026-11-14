@@ -34,7 +34,7 @@ final class DiskMonitor {
             .volumeAvailableCapacityForImportantUsageKey,
             .volumeAvailableCapacityKey,
             .volumeIsRemovableKey, .volumeIsInternalKey,
-            .volumeIsBrowsableKey
+            .volumeIsBrowsableKey, .volumeIsReadOnlyKey
         ]
 
         guard let urls = FileManager.default.mountedVolumeURLs(
@@ -48,6 +48,9 @@ final class DiskMonitor {
             // Volumele nenavigabile sunt instantanee de sistem și partiții
             // ascunse: apar în listă, dar n-au sens pentru un utilizator.
             guard values.volumeIsBrowsable != false else { continue }
+            // Imaginile de disc montate (DMG, instalatoare) sunt doar-citire și
+            // mereu pline: ar apărea ca disc „plin” în roșu, fără sens.
+            guard values.volumeIsReadOnly != true else { continue }
             guard let total = values.volumeTotalCapacity, total > 0 else { continue }
 
             let available = values.volumeAvailableCapacityForImportantUsage

@@ -43,7 +43,8 @@ final class BatteryMonitor {
         let raw = isCharging
             ? info[kIOPSTimeToFullChargeKey] as? Int
             : info[kIOPSTimeToEmptyKey] as? Int
-        let minutes = (raw ?? -1) >= 0 ? raw : nil
+        // 0 și 65535 sunt „nu știu” (la priză, fără încărcare), nu „zero minute”.
+        let minutes = (raw ?? -1) > 0 && raw != 65535 ? raw : nil
 
         let smart = Self.smartBattery()
 

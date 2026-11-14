@@ -7,7 +7,7 @@ struct DashboardView: View {
     @ObservedObject private var sampler = SystemSampler.shared
     @ObservedObject private var localization = LocalizationManager.shared
 
-    private let columns = [GridItem(.adaptive(minimum: 300, maximum: 460), spacing: 14)]
+    private let columns = [GridItem(.adaptive(minimum: 300, maximum: 460), spacing: 14, alignment: .top)]
 
     var body: some View {
         ScrollView {
